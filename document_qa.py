@@ -15,7 +15,7 @@ from chainlit.types import AskFileResponse
 
 os.environ['OPENAI_API_KEY'] = "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"
 
-custom_temp_dir = "D:\\"
+custom_temp_dir = "D:/"
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 embeddings = OpenAIEmbeddings()
@@ -29,19 +29,26 @@ welcome_message = """Welcome to the Chainlit PDF QA demo! To get started:
 def process_file(file: AskFileResponse):
     import tempfile
 
-    if file.type == "text/plain":
-        Loader = TextLoader
-    elif file.type == "application/pdf":
-        Loader = PyPDFLoader
+    try:
+        if file.type == "text/plain":
+            Loader = TextLoader
+        elif file.type == "application/pdf":
+            Loader = PyPDFLoader
 
-    with tempfile.NamedTemporaryFile(dir=custom_temp_dir,delete=False) as tempfile:
-        tempfile.write(file.content)
-        loader = Loader(tempfile.name)
+        # Use os.path.join for path construction and normalize the path
+        temp_file_path = os.path.join(custom_temp_dir, "tempfile.txt").replace("\\", "/")
+
+        with open(temp_file_path, "wb") as temp_file:
+            temp_file.write(file.content)
+
+        loader = Loader(temp_file_path)
         documents = loader.load()
         docs = text_splitter.split_documents(documents)
         for i, doc in enumerate(docs):
             doc.metadata["source"] = f"source_{i}"
         return docs
+    except Exception as e:
+        return f"Error processing file: {str(e)}"
 
 
 def get_docsearch(file: AskFileResponse):
