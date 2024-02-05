@@ -13,7 +13,7 @@ import chainlit as cl
 from chainlit.types import AskFileResponse
 
 
-os.environ['OPENAI_API_KEY'] = "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"
+os.environ['OPENAI_API_KEY'] = "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"
 
 custom_temp_dir = "D:\\"
 
